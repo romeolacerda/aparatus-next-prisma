@@ -20,7 +20,7 @@ model Barbershop {
   address     String
   description String
   imageUrl    String
-  phones      String
+  phones      String[]
   services    BarbershopService[]
 }
 
@@ -32,16 +32,13 @@ model BarbershopService {
   barbershopId String
   barbershop   Barbershop @relation(fields: [barbershopId], references: [id])
   priceInCents Int
-  bookings     Booking[]
 }
 
 model Booking {
   id           String    @id @default(uuid())
   serviceId    String
   barbershopId String
-  date         DateTime  @db.Timestamptz()
+  date         DateTime  @db.Timestamptz
   cancelled    Boolean?  @default(false)
-  cancelledAt  DateTime? @db.Timestamptz()
-
-  barbershopService BarbershopService @relation(fields: [serviceId], references: [id])
+  cancelledAt  DateTime? @db.Timestamptz
 }
