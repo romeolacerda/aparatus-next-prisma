@@ -7,6 +7,17 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { cancelBooking } from "../_actions/cancel-booking";
 import { PhoneItem } from "./phone-item";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "./ui/alert-dialog";
 import { Avatar } from "./ui/avatar";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
@@ -113,6 +124,7 @@ const BookingItem = ({ booking }: BookingItemProps) => {
         </SheetHeader>
 
         <div className="space-y-6 px-5 py-6">
+          {/* Imagem do mapa com informações da barbearia */}
           <div className="relative h-[180px] w-full overflow-hidden rounded-lg">
             <Image
               src="/map.png"
@@ -135,6 +147,7 @@ const BookingItem = ({ booking }: BookingItemProps) => {
             </div>
           </div>
 
+          {/* Badge de status */}
           <Badge
             className={
               isConfirmed
@@ -145,6 +158,7 @@ const BookingItem = ({ booking }: BookingItemProps) => {
             {isConfirmed ? "Confirmado" : "Finalizado"}
           </Badge>
 
+          {/* Card com informações da reserva */}
           <div className="bg-card space-y-3 rounded-lg border p-3">
             <div className="flex items-center justify-between font-bold">
               <p>{booking.service.name}</p>
@@ -179,6 +193,7 @@ const BookingItem = ({ booking }: BookingItemProps) => {
             </div>
           </div>
 
+          {/* Telefones */}
           {booking.barbershop.phones.length > 0 && (
             <div className="space-y-3">
               {booking.barbershop.phones.map((phone) => (
@@ -188,6 +203,7 @@ const BookingItem = ({ booking }: BookingItemProps) => {
           )}
         </div>
 
+        {/* Botões no rodapé */}
         <div className="flex gap-3 px-5 pb-6">
           <Button
             variant="outline"
@@ -197,13 +213,33 @@ const BookingItem = ({ booking }: BookingItemProps) => {
             Voltar
           </Button>
           {isConfirmed && (
-            <Button
-              variant="destructive"
-              className="flex-1 rounded-full"
-              onClick={handleCancelBooking}
-            >
-              Cancelar Reserva
-            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive" className="flex-1 rounded-full">
+                  Cancelar Reserva
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>
+                    Cancelar reserva
+                  </AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Tem certeza que deseja cancelar esta reserva? Esta ação não
+                    pode ser desfeita.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Voltar</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleCancelBooking}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    Confirmar
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           )}
         </div>
       </SheetContent>
