@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useState } from "react";
 import { toast } from "sonner";
 import { cancelBooking } from "../_actions/cancel-booking";
+import { Booking } from "../generated/prisma/client";
 import { PhoneItem } from "./phone-item";
 import {
   AlertDialog,
@@ -49,6 +50,15 @@ interface BookingItemProps {
   };
 }
 
+const getStatus = (booking: Pick<Booking, "date" | "cancelled">) => {
+  if (booking.cancelled) {
+    return "cancelled";
+  }
+  const date = new Date(booking.date);
+  const now = new Date();
+  return date >= now ? "confirmed" : "finished";
+};
+
 const BookingItem = ({ booking }: BookingItemProps) => {
   const [sheetIsOpen, setSheetIsOpen] = useState(false);
 
@@ -68,9 +78,7 @@ const BookingItem = ({ booking }: BookingItemProps) => {
     executeCancelBooking({ bookingId: booking.id });
   };
 
-  const date = new Date(booking.date);
-  const now = new Date();
-  const status = !booking.cancelled && date >= now ? "confirmed" : "finished";
+  const status = getStatus(booking);
   const isConfirmed = status === "confirmed";
 
   return (
@@ -85,7 +93,11 @@ const BookingItem = ({ booking }: BookingItemProps) => {
                   : "bg-muted text-muted-foreground uppercase"
               }
             >
-              {status === "confirmed" ? "Confirmado" : "Finalizado"}
+              {status === "confirmed"
+                ? "Confirmado"
+                : status === "finished"
+                  ? "Finalizado"
+                  : "Cancelado"}
             </Badge>
 
             <div className="flex flex-col gap-2">
@@ -101,13 +113,13 @@ const BookingItem = ({ booking }: BookingItemProps) => {
 
           <div className="flex h-full w-[106px] flex-col items-center justify-center border-l py-3">
             <p className="text-xs capitalize">
-              {date.toLocaleDateString("pt-BR", { month: "long" })}
+              {booking.date.toLocaleDateString("pt-BR", { month: "long" })}
             </p>
             <p className="text-2xl">
-              {date.toLocaleDateString("pt-BR", { day: "2-digit" })}
+              {booking.date.toLocaleDateString("pt-BR", { day: "2-digit" })}
             </p>
             <p className="text-xs">
-              {date.toLocaleTimeString("pt-BR", {
+              {booking.date.toLocaleTimeString("pt-BR", {
                 hour: "2-digit",
                 minute: "2-digit",
               })}
@@ -124,7 +136,6 @@ const BookingItem = ({ booking }: BookingItemProps) => {
         </SheetHeader>
 
         <div className="space-y-6 px-5 py-6">
-          {/* Imagem do mapa com informações da barbearia */}
           <div className="relative h-[180px] w-full overflow-hidden rounded-lg">
             <Image
               src="/map.png"
@@ -147,7 +158,6 @@ const BookingItem = ({ booking }: BookingItemProps) => {
             </div>
           </div>
 
-          {/* Badge de status */}
           <Badge
             className={
               isConfirmed
@@ -158,7 +168,6 @@ const BookingItem = ({ booking }: BookingItemProps) => {
             {isConfirmed ? "Confirmado" : "Finalizado"}
           </Badge>
 
-          {/* Card com informações da reserva */}
           <div className="bg-card space-y-3 rounded-lg border p-3">
             <div className="flex items-center justify-between font-bold">
               <p>{booking.service.name}</p>
@@ -172,7 +181,7 @@ const BookingItem = ({ booking }: BookingItemProps) => {
             <div className="text-muted-foreground flex items-center justify-between text-sm">
               <p>Data</p>
               <p>
-                {date.toLocaleDateString("pt-BR", {
+                {booking.date.toLocaleDateString("pt-BR", {
                   day: "2-digit",
                   month: "long",
                 })}
@@ -181,7 +190,7 @@ const BookingItem = ({ booking }: BookingItemProps) => {
             <div className="text-muted-foreground flex items-center justify-between text-sm">
               <p>Horário</p>
               <p>
-                {date.toLocaleTimeString("pt-BR", {
+                {booking.date.toLocaleTimeString("pt-BR", {
                   hour: "2-digit",
                   minute: "2-digit",
                 })}
@@ -193,7 +202,6 @@ const BookingItem = ({ booking }: BookingItemProps) => {
             </div>
           </div>
 
-          {/* Telefones */}
           {booking.barbershop.phones.length > 0 && (
             <div className="space-y-3">
               {booking.barbershop.phones.map((phone) => (
@@ -203,7 +211,6 @@ const BookingItem = ({ booking }: BookingItemProps) => {
           )}
         </div>
 
-        {/* Botões no rodapé */}
         <div className="flex gap-3 px-5 pb-6">
           <Button
             variant="outline"
@@ -221,9 +228,7 @@ const BookingItem = ({ booking }: BookingItemProps) => {
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>
-                    Cancelar reserva
-                  </AlertDialogTitle>
+                  <AlertDialogTitle>Cancelar reserva</AlertDialogTitle>
                   <AlertDialogDescription>
                     Tem certeza que deseja cancelar esta reserva? Esta ação não
                     pode ser desfeita.

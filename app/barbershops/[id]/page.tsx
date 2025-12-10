@@ -25,7 +25,6 @@ const BarbershopPage = async (props: PageProps<"/barbershops/[id]">) => {
 
   return (
     <div className="flex size-full flex-col items-start overflow-clip">
-      {/* Hero Section com Imagem */}
       <div className="relative h-[297px] w-full">
         <div className="absolute top-0 left-0 h-full w-full">
           <Image
@@ -36,7 +35,6 @@ const BarbershopPage = async (props: PageProps<"/barbershops/[id]">) => {
           />
         </div>
 
-        {/* Botão Voltar */}
         <div className="absolute top-0 left-0 flex w-full items-baseline gap-[91px] px-5 pt-6 pb-0">
           <Button
             size="icon"
@@ -51,9 +49,7 @@ const BarbershopPage = async (props: PageProps<"/barbershops/[id]">) => {
         </div>
       </div>
 
-      {/* Container Principal */}
       <div className="bg-background w-full flex-1 rounded-tl-3xl rounded-tr-3xl">
-        {/* Informações da Barbearia */}
         <div className="flex w-full items-center gap-1.5 px-5 pt-6 pb-0">
           <div className="flex flex-col items-start gap-1">
             <div className="flex items-start gap-1.5">
@@ -79,12 +75,10 @@ const BarbershopPage = async (props: PageProps<"/barbershops/[id]">) => {
           </div>
         </div>
 
-        {/* Divider */}
         <div className="px-0 py-6">
           <Separator />
         </div>
 
-        {/* Sobre Nós */}
         <div className="flex w-full flex-col items-start gap-3 px-5 py-0">
           <div className="flex items-center justify-center gap-2.5">
             <p className="text-foreground text-xs font-bold uppercase">
@@ -96,12 +90,10 @@ const BarbershopPage = async (props: PageProps<"/barbershops/[id]">) => {
           </p>
         </div>
 
-        {/* Divider */}
         <div className="px-0 py-6">
           <Separator />
         </div>
 
-        {/* Serviços */}
         <div className="flex w-full flex-col items-start gap-3 px-5 py-0">
           <div className="flex items-center justify-center gap-2.5">
             <p className="text-foreground text-xs font-bold uppercase">
@@ -118,12 +110,10 @@ const BarbershopPage = async (props: PageProps<"/barbershops/[id]">) => {
           </div>
         </div>
 
-        {/* Divider */}
         <div className="px-0 py-6">
           <Separator />
         </div>
 
-        {/* Contato */}
         <div className="flex w-full flex-col items-start gap-3 px-5 py-0">
           <div className="flex items-center justify-center gap-2.5">
             <p className="text-foreground text-xs font-bold uppercase">
@@ -137,7 +127,6 @@ const BarbershopPage = async (props: PageProps<"/barbershops/[id]">) => {
           </div>
         </div>
 
-        {/* Footer */}
         <div className="flex w-full flex-col items-center gap-2.5 px-0 pt-[60px] pb-0">
           <div className="bg-secondary flex w-full flex-col items-start justify-center gap-1.5 px-[30px] py-8 text-xs leading-none">
             <p className="text-foreground font-semibold">
