@@ -9,7 +9,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { createBooking } from "../_actions/create-booking";
 import { getDateAvailableTimeSlots } from "../_actions/get-date-available-time-slots";
-import { Barbershop, BarbershopService } from "../generated/prisma/client";
+import { Barbershop, BarbershopService } from "@/generated/prisma/client";
 import { Button } from "./ui/button";
 import { Calendar } from "./ui/calendar";
 import { Separator } from "./ui/separator";

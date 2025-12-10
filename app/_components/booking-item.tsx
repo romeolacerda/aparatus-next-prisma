@@ -6,7 +6,7 @@ import Image from "next/image";
 import { useState } from "react";
 import { toast } from "sonner";
 import { cancelBooking } from "../_actions/cancel-booking";
-import { Booking } from "../generated/prisma/client";
+import { Booking } from "@/generated/prisma/client";
 import { PhoneItem } from "./phone-item";
 import {
   AlertDialog,
