@@ -13,6 +13,8 @@ import { ChatMessage } from "./_components/chat-message";
 export default function ChatPage() {
   const [message, setMessage] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const processedToolCallsRef = useRef<Set<string>>(new Set());
+  
   const { messages, sendMessage, status } = useChat({
     transport: new DefaultChatTransport({
       api: "/api/chat",
@@ -25,6 +27,35 @@ export default function ChatPage() {
 
   useEffect(() => {
     scrollToBottom();
+  }, [messages]);
+
+  useEffect(() => {
+    messages.forEach((message) => {
+      if (message.parts) {
+        message.parts.forEach((part) => {
+          
+          if (part.type === "tool-createCheckoutSession" && "output" in part) {
+            
+            const toolCallId = `${message.id}-${part.toolCallId}`;
+            
+            if (processedToolCallsRef.current.has(toolCallId)) {
+              return;
+            }
+            
+            const output = part.output as any;
+            
+            if (output?.success && output?.url) {
+              
+              processedToolCallsRef.current.add(toolCallId);
+              
+              setTimeout(() => {
+                window.location.href = output.url;
+              }, 1500);
+            } 
+          }
+        });
+      }
+    });
   }, [messages]);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -45,17 +76,16 @@ export default function ChatPage() {
         <Link href="/">
           <ChevronLeft className="size-6 shrink-0" />
         </Link>
-        <Link href={"/"} >
+        <Link href={"/"}>
           <Image src="/logo.svg" alt="Aparatus" width={100} height={26.09} />
         </Link>
-        
       </div>
 
       <div className="flex-1 overflow-y-auto pb-24 [&::-webkit-scrollbar]:hidden">
         {messages.length === 0
           ? INITIAL_MESSAGES.map((msg) => (
-            <ChatMessage key={msg.id} message={msg} />
-          ))
+              <ChatMessage key={msg.id} message={msg} />
+            ))
           : messages.map((msg) => <ChatMessage key={msg.id} message={msg} />)}
         <div ref={messagesEndRef} />
       </div>

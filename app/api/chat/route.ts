@@ -64,12 +64,17 @@ export const POST = async (request: Request) => {
     - Data e horário escolhido
     - Preço
 
+    IMPORTANTE SOBRE IDs:
+    - Quando você buscar as barbearias e serviços, você receberá o campo "id" de cada serviço
+    - GUARDE MENTALMENTE esse ID do serviço que o usuário escolheu
+    - Exemplo: Se o usuário escolher "Corte de Cabelo" da barbearia "Vintage Barber", você deve lembrar qual era o "id" desse serviço específico que foi retornado pela ferramenta searchBarbershops, lembre-se de não compartilhao com o usuário
+
     Criação da reserva:
     - Após o usuário confirmar explicitamente a escolha (ex: "confirmo", "pode agendar", "quero esse horário"), use a ferramenta createCheckoutSession
     - IMPORTANTE: Use a ferramenta createCheckoutSession APENAS UMA VEZ por agendamento confirmado
     - Se você já criou um checkout session nesta conversa, NÃO crie outro
     - Parâmetros necessários:
-      * serviceId: ID do serviço escolhido
+      * serviceId: Use o ID (campo "id") do serviço que foi retornado pela ferramenta searchBarbershops quando o usuário escolheu o serviço. É um UUID, não o nome do serviço!
       * date: Data e horário no formato ISO (YYYY-MM-DDTHH:mm:ss) - exemplo: "2025-11-05T10:00:00"
     - Se a criação for bem-sucedida (success: true, url: "..."), informe ao usuário:
       * "Perfeito! Estou redirecionando você para o pagamento. Aguarde um momento..."
@@ -171,44 +176,85 @@ export const POST = async (request: Request) => {
           serviceId: z.string().describe("ID do serviço"),
           date: z
             .string()
-            .describe("Data em ISO String para a qual deseja agendar"),
+            .describe("Data em ISO String para a qual deseja agendar (formato: YYYY-MM-DDTHH:mm:ss)"),
         }),
         execute: async ({ serviceId, date }) => {
-          const bookingKey = `${serviceId}-${date}`;
-          
-          const lastCheckout = recentCheckouts.get(bookingKey);
-          if (lastCheckout && Date.now() - lastCheckout < 10 * 60 * 1000) {
-            return {
-              success: false,
-              error: "Duplicate booking - já foi criado um agendamento para este horário nos últimos 10 minutos",
-            };
-          }
 
-          const parsedDate = new Date(date);
-          const result = await createBookingCheckoutSession({
-            serviceId,
-            date: parsedDate,
-          });
-          
-          if (result.serverError || result.validationErrors) {
+          try {
+            const bookingKey = `${serviceId}-${date}`;
+
+            const lastCheckout = recentCheckouts.get(bookingKey);
+            if (lastCheckout && Date.now() - lastCheckout < 10 * 60 * 1000) {
+              return {
+                success: false,
+                error: "Duplicate booking",
+              };
+            }
+
+            const parsedDate = new Date(date);
+
+            if (isNaN(parsedDate.getTime())) {
+              return {
+                success: false,
+                error: "Data inválida",
+              };
+            }
+
+            const result = await createBookingCheckoutSession({
+              serviceId,
+              date: parsedDate,
+            });
+
+            if (result?.serverError) {
+              console.error("❌ Server error:", result.serverError);
+              return {
+                success: false,
+                error: result.serverError,
+              };
+            }
+
+            if (result?.validationErrors) {
+              const errorMessage = result.validationErrors._errors?.[0] ||
+                "Erro de validação";
+
+              if (errorMessage === "Unauthorized") {
+                return {
+                  success: false,
+                  error: "Unauthorized",
+                };
+              }
+
+              return {
+                success: false,
+                error: errorMessage,
+              };
+            }
+
+            if (result?.data) {
+              recentCheckouts.set(bookingKey, Date.now());
+
+              return {
+                success: true,
+                url: result.data.url,
+                checkoutSessionId: result.data.id,
+              };
+            }
+
             return {
               success: false,
-              error:
-                result.validationErrors?._errors?.[0] ||
-                "Erro ao criar sessão de checkout",
+              error: "Resposta inesperada da API",
+            };
+
+          } catch (error) {
+            return {
+              success: false,
+              error: error instanceof Error ? error.message : "Erro desconhecido",
             };
           }
-          
-          recentCheckouts.set(bookingKey, Date.now());
-          
-          return {
-            success: true,
-            url: result.data?.url,
-            checkoutSessionId: result.data?.id,
-          };
         },
       }),
     },
   });
+  
   return result.toUIMessageStreamResponse();
 };
